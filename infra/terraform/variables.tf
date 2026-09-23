@@ -95,7 +95,7 @@ variable "backup_interval" {
 variable "backup_retention" {
   description = "restic forget flags"
   type        = string
-  default     = "--keep-hourly 24 --keep-daily 7 --keep-weekly 4 --keep-monthly 3"
+  default     = "--keep-last 10 --keep-hourly 24 --keep-daily 7 --keep-weekly 4 --keep-monthly 3"
 }
 
 variable "rcon_password" {

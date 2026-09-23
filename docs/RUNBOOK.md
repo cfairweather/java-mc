@@ -42,7 +42,7 @@ and starts the new task. Expect 2 to 5 minutes of downtime.
 ## Backups
 
 - Automatic: every 2 hours while players have been online since the last run,
-  snapshots kept per `backup_retention` (24 hourly, 7 daily, 4 weekly, 3 monthly).
+  snapshots kept per `backup_retention` (last 10 plus 24 hourly, 7 daily, 4 weekly, 3 monthly). The `--keep-last 10` matters: without it two snapshots in the same hour collapse into one, including manual pre-update snapshots.
 - Manual, before anything risky: `make aws-backup-now`.
 - List: `make aws-snapshots`.
 

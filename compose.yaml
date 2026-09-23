@@ -50,7 +50,7 @@ services:
       RESTIC_HOST: java-mc-local
       BACKUP_INTERVAL: 2h
       INITIAL_DELAY: 2m
-      PRUNE_RESTIC_RETENTION: --keep-hourly 24 --keep-daily 7 --keep-weekly 4
+      PRUNE_RESTIC_RETENTION: --keep-last 10 --keep-hourly 24 --keep-daily 7 --keep-weekly 4
       PAUSE_IF_NO_PLAYERS: "true"
       PLAYERS_ONLINE_CHECK_INTERVAL: 5m
       RCON_HOST: mc

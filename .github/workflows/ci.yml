@@ -57,7 +57,7 @@ jobs:
           docker compose exec -T mc mc-health
           docker compose exec -T mc rcon-cli list
           docker compose exec -T mc sh -c 'grep -E "^(online-mode|white-list|enforce-whitelist|enforce-secure-profile)=" /data/server.properties'
-          docker compose exec -T mc rcon-cli gamerule keepInventory | grep -q true
+          docker compose exec -T mc rcon-cli gamerule keep_inventory | grep -q true
       - name: Server logs
         if: always()
         run: docker compose logs mc | tail -n 200
