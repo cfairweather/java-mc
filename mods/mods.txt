@@ -1,0 +1,58 @@
+# Curated mod list. This file is the source of truth; run `make resolve` to
+# regenerate mods/lock.json and the mods/server-mods.*.txt listings.
+#
+# Columns: <modrinth-slug> <side> <profile> [datapack]
+#   side:    server | client | both   (where the file is installed)
+#   profile: core | full
+#     core = server-side only or client-optional; vanilla clients can still join
+#     full = adds content mods that every client must also install (the .mrpack)
+#   datapack: resolve as a datapack instead of a Fabric mod
+#
+# --- Foundation ------------------------------------------------------------
+fabric-api                      both     core
+placeholder-api                 both     core
+fabric-language-kotlin          server   core   # runtime dependency of Ledger (undeclared on Modrinth)
+# --- Performance (server) ---------------------------------------------------
+lithium                         both     core
+ferrite-core                    both     core
+krypton                         both     core
+scalablelux                     both     core
+c2me-fabric                     server   core
+vmp-fabric                      server   core
+servercore                      server   core
+alternate-current               server   core
+spark                           server   core
+# --- Admin / social (server only) ------------------------------------------
+luckperms                       server   core
+styled-chat                     server   core
+fabrictailor                    server   core
+ledger                          server   core
+vanish                          server   core
+chunky                          server   core
+bluemap                         server   core
+afk-display                     server   core   datapack
+# --- World generation (server only, decide before world creation) ----------
+terralith                       server   core
+tectonic                        server   core
+nullscape                       server   core
+incendium                       server   core
+dungeons-and-taverns            server   core
+# --- Client-optional helpers (server half is harmless to vanilla clients) --
+jade                            both     core
+appleskin                       both     core
+distanthorizons                 both     core
+xaeros-minimap                  both     core
+xaeros-world-map                both     core
+# --- Client only (bundled in every .mrpack) --------------------------------
+sodium                          client   core
+iris                            client   core
+modmenu                         client   core
+entityculling                   client   core
+immediatelyfast                 client   core
+# --- Content mods: require the full client pack ----------------------------
+waystones                       both     full
+farmers-delight-refabricated    both     full
+naturalist                      both     full
+comforts                        both     full
+better-combat                   both     full
+immersive-armors                both     full

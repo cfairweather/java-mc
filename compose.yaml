@@ -1,0 +1,67 @@
+# Local development / testing stack. Mirrors the AWS ECS task definition in
+# infra/terraform. Start with `make up`, see the Makefile for the rest.
+name: java-mc
+
+services:
+  mc:
+    build:
+      context: .
+      args:
+        BASE_IMAGE: ${BASE_IMAGE:-itzg/minecraft-server:2026.9.1-java25}
+    image: ${IMAGE:-ghcr.io/cfairweather/java-mc:local}
+    env_file:
+      - mods/versions.env
+      - server/server.env
+    environment:
+      MODRINTH_PROJECTS: "@/mods-list/server-mods.${SERVER_PROFILE:-full}.txt"
+      MODPACK_VERSION: ${SERVER_PROFILE:-full}
+      RCON_PASSWORD: ${RCON_PASSWORD:?set RCON_PASSWORD in .env}
+      MEMORY: ${MEMORY:-8G}
+      # BlueMap's own port is set in server/config/bluemap/webserver.conf.
+    ports:
+      - "25565:25565/tcp"
+      - "127.0.0.1:8100:8100/tcp"   # BlueMap, loopback only
+    volumes:
+      - mc-data:/data
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+    stop_grace_period: 1m
+    healthcheck:
+      test: ["CMD", "mc-health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10m
+    deploy:
+      resources:
+        limits:
+          memory: ${CONTAINER_MEMORY:-10g}
+
+  backup:
+    image: itzg/mc-backup:2026.9.2
+    depends_on:
+      mc:
+        condition: service_healthy
+    environment:
+      BACKUP_METHOD: restic
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:-/backups/restic}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD:?set RESTIC_PASSWORD in .env}
+      RESTIC_HOST: java-mc-local
+      BACKUP_INTERVAL: 2h
+      INITIAL_DELAY: 2m
+      PRUNE_RESTIC_RETENTION: --keep-hourly 24 --keep-daily 7 --keep-weekly 4
+      PAUSE_IF_NO_PLAYERS: "true"
+      PLAYERS_ONLINE_CHECK_INTERVAL: 5m
+      RCON_HOST: mc
+      RCON_PORT: 25575
+      RCON_PASSWORD: ${RCON_PASSWORD}
+      EXCLUDES: "*.jar,cache,logs,libraries,versions,.fabric,bluemap/web/maps"
+      TZ: America/Los_Angeles
+    volumes:
+      - mc-data:/data:ro
+      - ./backups:/backups
+    restart: unless-stopped
+
+volumes:
+  mc-data:

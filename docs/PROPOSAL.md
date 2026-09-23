@@ -1,6 +1,6 @@
 # Implementation Proposal: Private Modded Minecraft Server on Docker
 
-Status: proposal, awaiting sign-off before implementation
+Status: accepted 2026-09-23, implemented in this repository (see README.md)
 Date: 2026-09-23
 
 ## 1. Goals
@@ -203,7 +203,32 @@ All mods are installed by the image from a pinned listing file (`mods/server-mod
 
 Phase 1 is the minimum viable server and is what I'd start on immediately after sign-off.
 
-## 9. Open questions
+## 9. Decisions taken (2026-09-23)
+
+| Question | Decision | Where it landed |
+| --- | --- | --- |
+| Loader / pack style | Fabric, vanilla-plus. No NeoForge, no Create. | `mods/mods.txt` |
+| Host | AWS, one EC2 instance on Bottlerocket (aws-ecs-2 variant), 4 vCPU / 16 GiB (`m7i.xlarge`), ECS EC2 launch type | `infra/terraform/ec2.tf`, `ecs.tf` |
+| Local testing | Docker Compose with the identical image | `compose.yaml` |
+| Network | Direct access on an Elastic IP, game port open, whitelist gates access; BlueMap only from `admin_cidrs` | `infra/terraform/network.tf` |
+| Backups | restic to S3 every 2h, IAM task role (no static keys), local restic repo when running under compose | `ecs.tf`, `s3.tf` |
+| Voice chat | Not included | |
+| BlueMap | Included, port 8100, admin IPs only | `server/config/bluemap/` |
+| World | difficulty easy, keepInventory on, PvP on | `server/server.env` |
+| Scope | All four phases built | this repo |
+
+Because keep-inventory is on, Universal Graves was dropped from the mod list
+(nothing to bury). ModernFix and YUNG's structure mods are still waiting for
+26.2 builds and are not installed; re-run `make resolve` after adding them to
+`mods/mods.txt` once they publish.
+
+Bottlerocket has no package manager and no SSH, so the host is deliberately
+"just a container runtime": ECS runs the two containers, SSM Session Manager
+provides a shell, ECS Exec provides RCON. Docker Compose is not used on the
+host; the compose file and the ECS task definition are kept equivalent by
+sharing `server/server.env` and `mods/versions.env`.
+
+## 10. Original open questions (answered above)
 
 1. **Fabric vanilla-plus vs NeoForge tech pack.** The proposal assumes Fabric. If Create-style automation is a must-have, we switch to NeoForge 1.21.1 and the mod list changes substantially.
 2. **Host details.** OS, CPU, RAM, and whether Docker is already installed. Sizing defaults assume 16 GB RAM.

@@ -1,0 +1,10 @@
+# Copy to terraform.tfvars (git-ignored) and fill in.
+region          = "us-west-2"
+name            = "java-mc"
+instance_type   = "m7i.xlarge" # 4 vCPU, 16 GiB
+data_volume_gb  = 100
+image           = "ghcr.io/cfairweather/java-mc:latest"
+server_profile  = "full"
+admin_cidrs     = ["203.0.113.4/32"] # your home IP, for BlueMap
+rcon_password   = "choose-a-long-random-string"
+restic_password = "choose-another-long-random-string-and-save-it"

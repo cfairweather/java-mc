@@ -1,0 +1,8 @@
+{
+  "name": "Friends Server",
+  "slug": "friends-server",
+  "version": "1.0.0",
+  "summary": "Client pack for our private Minecraft server. Install with the Modrinth App or Prism Launcher.",
+  "server_address": "SET-ME.example.com",
+  "server_name": "Friends Server"
+}

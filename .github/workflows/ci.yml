@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  mods:
+    name: Mod lock and client packs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Lock file matches mods/mods.txt
+        run: python3 scripts/resolve_mods.py --check
+      - name: Build client packs
+        run: |
+          python3 scripts/build_mrpack.py --profile core
+          python3 scripts/build_mrpack.py --profile full
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mrpacks
+          path: dist/*.mrpack
+
+  image:
+    name: Server image builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: java-mc:ci
+      - name: Compose file is valid
+        env:
+          RCON_PASSWORD: ci
+          RESTIC_PASSWORD: ci
+        run: docker compose config --quiet
+      - name: Server boots and RCON answers (core profile)
+        env:
+          RCON_PASSWORD: ci
+          SERVER_PROFILE: core
+          MEMORY: 2G
+          IMAGE: java-mc:ci
+        run: |
+          docker compose up -d --no-build mc
+          for i in $(seq 1 60); do
+            if docker compose exec -T mc mc-health >/dev/null 2>&1; then break; fi
+            sleep 10
+          done
+          docker compose exec -T mc mc-health
+          docker compose exec -T mc rcon-cli list
+          docker compose exec -T mc sh -c 'grep -E "^(online-mode|white-list|enforce-whitelist|enforce-secure-profile)=" /data/server.properties'
+          docker compose exec -T mc rcon-cli gamerule keepInventory | grep -q true
+      - name: Server logs
+        if: always()
+        run: docker compose logs mc | tail -n 200
+      - name: Stop
+        if: always()
+        run: docker compose down -v
+
+  shell:
+    name: Shell scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: shellcheck scripts/*.sh
+
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false -input=false
+      - run: terraform validate
