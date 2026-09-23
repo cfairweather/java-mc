@@ -1,9 +1,13 @@
 name: Release
 
+# Push a tag like v1.0.0 to publish:
+#   - ghcr.io/<owner>/<repo>:1.0.0, :1.0, :sha-xxxxxxx and :latest
+#   - a GitHub release with the core and full client packs (.mrpack)
 on:
   push:
     branches: [main]
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -14,7 +18,7 @@ jobs:
     name: Build and push server image
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{ steps.meta.outputs.version }}
+      tags: ${{ steps.meta.outputs.tags }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -28,9 +32,10 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
             type=sha,format=short
-            type=ref,event=tag
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' || github.ref == 'refs/heads/main' }}
       - uses: docker/build-push-action@v6
         with:
           context: .
@@ -40,9 +45,10 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  packs:
-    name: Publish client packs
+  release:
+    name: GitHub release with client packs
     if: startsWith(github.ref, 'refs/tags/v')
+    needs: image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -54,7 +60,29 @@ jobs:
           v="${GITHUB_REF_NAME#v}"
           python3 scripts/build_mrpack.py --profile core --version "$v"
           python3 scripts/build_mrpack.py --profile full --version "$v"
+      - name: Release notes
+        env:
+          TAGS: ${{ needs.image.outputs.tags }}
+        run: |
+          {
+            echo "## Server image"
+            echo
+            echo '```'
+            echo "docker pull ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_REF_NAME#v}"
+            echo '```'
+            echo
+            echo "Tags pushed:"
+            echo "$TAGS" | sed 's/^/- `/; s/$/`/'
+            echo
+            echo "## Client packs"
+            echo
+            echo "- \`*-full-*.mrpack\`: everyone installs this when the server runs the full profile (default)."
+            echo "- \`*-core-*.mrpack\`: optional performance mods for a server on the core profile."
+            echo
+            echo "Install with the Modrinth App or Prism Launcher. See docs/JOINING.md."
+          } > release-notes.md
       - uses: softprops/action-gh-release@v2
         with:
           files: dist/*.mrpack
+          body_path: release-notes.md
           generate_release_notes: true

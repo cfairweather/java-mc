@@ -86,7 +86,11 @@ def main():
     out = DIST / f"{pack['slug']}-{profile}-{version}.mrpack"
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr("modrinth.index.json", json.dumps(index, indent=2))
-        z.writestr("overrides/servers.dat", servers_dat(pack["server_name"], pack["server_address"]))
+        address = pack.get("server_address", "")
+        if address and not address.startswith("SET-ME"):
+            z.writestr("overrides/servers.dat", servers_dat(pack["server_name"], address))
+        else:
+            print("note: client-pack/pack.json has no server_address yet; pack will not pre-fill the server list", file=sys.stderr)
         if OVERRIDES.exists():
             for p in sorted(OVERRIDES.rglob("*")):
                 if p.is_file():

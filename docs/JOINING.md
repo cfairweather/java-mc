@@ -12,7 +12,9 @@ the host first.
 3. In the Modrinth App: **Library → Create → From file**, pick the `.mrpack`.
    It installs Minecraft 26.2, Fabric, and every mod. Prism: **Add Instance → Import**.
 4. Sign in with your Microsoft account inside the launcher.
-5. Play. The server is already in your multiplayer list.
+5. Play. The server is already in your multiplayer list. If it is not (early
+   packs were published before the server had an address), add it under
+   **Multiplayer → Add Server** with the address the host gives you.
 
 When the host publishes a new pack version, repeat steps 2 and 3 (the launcher
 offers to update the existing profile).
