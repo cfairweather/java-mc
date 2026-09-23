@@ -80,7 +80,8 @@ take a snapshot, break something visible in-game, restore, confirm it is back.
 2. `make up && make logs` locally with a copy of the world if you want to be
    careful: `docker run --rm -v java-mc_mc-data:/data -v $PWD/backups:/backups itzg/mc-backup restic restore latest --target /`.
 3. `make aws-backup-now`, commit, `make tf-apply`.
-4. Tag a release so friends get a new `.mrpack` (`git tag v1.1.0 && git push --tags`).
+4. Publish a release so friends get a new `.mrpack`: push a `v1.1.0` tag, or run
+   **Actions → Release → Run workflow** on `main` with version `1.1.0`.
 
 Mojang world upgrades are one way. Keep the pre-upgrade snapshot until you are sure.
 

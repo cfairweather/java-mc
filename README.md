@@ -54,14 +54,16 @@ listens on `localhost:25565`; BlueMap is at <http://localhost:8100>.
 
 Requirements: AWS CLI v2 with the Session Manager plugin, Terraform 1.6+.
 
-1. Push the image once so ECS can pull it: merging to `main` does this via
-   GitHub Actions (`ghcr.io/cfairweather/java-mc:latest`). Make the GHCR
-   package public, or set `image_pull_secret_arn`.
+1. The image is published by GitHub Actions: every push to `main` updates
+   `ghcr.io/cfairweather/java-mc:latest`, and every release adds a version tag.
+   Make the GHCR package public, or set `image_pull_secret_arn`.
 2. `cp infra/terraform/terraform.tfvars.example infra/terraform/terraform.tfvars`
    and fill it in (passwords, your home IP for BlueMap).
 3. `make tf-init tf-apply`. Output `server_address` is the Elastic IP.
-4. Put that address in `client-pack/pack.json`, tag a release (`git tag v1.0.0 && git push --tags`)
-   and send friends the `.mrpack` from the GitHub release.
+4. Put that address in `client-pack/pack.json`, publish a release, and send
+   friends the `.mrpack` from it. To release, either push a tag
+   (`git tag v1.0.1 && git push origin v1.0.1`) or run **Actions → Release →
+   Run workflow** on `main` with the version (it creates the tag).
 
 Day to day:
 

@@ -1,13 +1,22 @@
 name: Release
 
-# Push a tag like v1.0.0 to publish:
+# Publish a release either way:
+#   - push a tag like v1.0.0, or
+#   - Actions > Release > Run workflow with version 1.0.0 (creates the tag)
+# Produces:
 #   - ghcr.io/<owner>/<repo>:1.0.0, :1.0, :sha-xxxxxxx and :latest
 #   - a GitHub release with the core and full client packs (.mrpack)
+# Pushes to main only publish :sha-xxxxxxx and :latest.
 on:
   push:
     branches: [main]
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, e.g. 1.0.0. Leave empty to only build and push the image."
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -19,8 +28,20 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+      - name: Resolve release version
+        id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then v="$GITHUB_REF_NAME"; else v="${INPUT_VERSION:-}"; fi
+          v="${v#v}"
+          if [[ -n "$v" && ! "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::'$v' is not a semantic version like 1.0.0"; exit 1
+          fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with:
@@ -32,10 +53,10 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{version}},value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.version != '' }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.version != '' }}
             type=sha,format=short
-            type=raw,value=latest,enable=${{ github.ref_type == 'tag' || github.ref == 'refs/heads/main' }}
+            type=raw,value=latest,enable=${{ steps.version.outputs.version != '' || github.ref == 'refs/heads/main' }}
       - uses: docker/build-push-action@v6
         with:
           context: .
@@ -47,7 +68,7 @@ jobs:
 
   release:
     name: GitHub release with client packs
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: needs.image.outputs.version != ''
     needs: image
     runs-on: ubuntu-latest
     steps:
@@ -55,20 +76,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Build packs with the tag as the version
+      - name: Build packs
+        env:
+          v: ${{ needs.image.outputs.version }}
         run: |
-          v="${GITHUB_REF_NAME#v}"
           python3 scripts/build_mrpack.py --profile core --version "$v"
           python3 scripts/build_mrpack.py --profile full --version "$v"
       - name: Release notes
         env:
           TAGS: ${{ needs.image.outputs.tags }}
+          v: ${{ needs.image.outputs.version }}
         run: |
           {
             echo "## Server image"
             echo
             echo '```'
-            echo "docker pull ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_REF_NAME#v}"
+            echo "docker pull ghcr.io/${GITHUB_REPOSITORY}:${v}"
             echo '```'
             echo
             echo "Tags pushed:"
@@ -83,6 +106,9 @@ jobs:
           } > release-notes.md
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ needs.image.outputs.version }}
+          name: v${{ needs.image.outputs.version }}
+          target_commitish: ${{ github.sha }}
           files: dist/*.mrpack
           body_path: release-notes.md
           generate_release_notes: true
