@@ -28,6 +28,10 @@ jobs:
   image:
     name: Server image builds
     runs-on: ubuntu-latest
+    # compose.yaml requires both secrets for every command, even for one service.
+    env:
+      RCON_PASSWORD: ci
+      RESTIC_PASSWORD: ci
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -38,13 +42,9 @@ jobs:
           load: true
           tags: java-mc:ci
       - name: Compose file is valid
-        env:
-          RCON_PASSWORD: ci
-          RESTIC_PASSWORD: ci
         run: docker compose config --quiet
       - name: Server boots and RCON answers (core profile)
         env:
-          RCON_PASSWORD: ci
           SERVER_PROFILE: core
           MEMORY: 2G
           IMAGE: java-mc:ci
