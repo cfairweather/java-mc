@@ -4,7 +4,7 @@ A private, modded Minecraft Java Edition server for friends. Runs the same
 Docker image locally (Docker Compose) and on AWS (one Bottlerocket host on ECS)
 with whitelist-only access, Mojang authentication, and restic backups to S3.
 
-- **Minecraft 26.2 on Fabric**, ~40 curated mods pinned by exact version (see
+- **Minecraft 26.3 on Fabric**, ~35 curated mods pinned by exact version (see
   [`mods/mods.txt`](mods/mods.txt) and the generated [`mods/lock.json`](mods/lock.json)).
 - **Two profiles.** `core`: server-side mods only, friends join with the stock
   launcher. `full` (default): adds content mods; friends install a one-click
@@ -88,5 +88,8 @@ git diff mods/                    # review what changed
 make up && make logs              # test locally
 ```
 
-To move to a new Minecraft version: `python3 scripts/resolve_mods.py --game-version 26.3`.
-It fails loudly listing every mod without a build for that version.
+To move to a new Minecraft version: `python3 scripts/resolve_mods.py --game-version 26.4`.
+It fails loudly listing every required mod without a build for that version.
+Mods marked `optional` in `mods/mods.txt` are skipped instead and listed at the
+top of the generated `mods/server-mods.*.txt`; re-run `make resolve` later and
+they come back once their authors publish builds.

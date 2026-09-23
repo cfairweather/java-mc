@@ -1,12 +1,16 @@
 # Curated mod list. This file is the source of truth; run `make resolve` to
 # regenerate mods/lock.json and the mods/server-mods.*.txt listings.
 #
-# Columns: <modrinth-slug> <side> <profile> [datapack]
+# Columns: <modrinth-slug> <side> <profile> [datapack] [optional]
 #   side:    server | client | both   (where the file is installed)
 #   profile: core | full
 #     core = server-side only or client-optional; vanilla clients can still join
 #     full = adds content mods that every client must also install (the .mrpack)
 #   datapack: resolve as a datapack instead of a Fabric mod
+#   optional: skip (with a warning) when no build exists for the target
+#             Minecraft version; `make resolve` picks it up once one is published.
+#             Careful with world-generation mods: terrain generated before the
+#             mod is added keeps its old look, so new chunks meet old ones at a seam.
 #
 # --- Foundation ------------------------------------------------------------
 fabric-api                      both     core
@@ -15,7 +19,7 @@ fabric-language-kotlin          server   core   # runtime dependency of Ledger (
 # --- Performance (server) ---------------------------------------------------
 lithium                         both     core
 ferrite-core                    both     core
-krypton                         both     core
+krypton                         both     core   optional
 scalablelux                     both     core
 c2me-fabric                     server   core
 vmp-fabric                      server   core
@@ -25,17 +29,17 @@ spark                           server   core
 # --- Admin / social (server only) ------------------------------------------
 luckperms                       server   core
 styled-chat                     server   core
-fabrictailor                    server   core
+fabrictailor                    server   core   optional
 ledger                          server   core
 vanish                          server   core
 chunky                          server   core
 bluemap                         server   core
-afk-display                     server   core   datapack
+afk-display                     server   core   datapack   optional
 # --- World generation (server only, decide before world creation) ----------
-terralith                       server   core
+terralith                       server   core   optional
 tectonic                        server   core
-nullscape                       server   core
-incendium                       server   core
+nullscape                       server   core   optional
+incendium                       server   core   optional
 dungeons-and-taverns            server   core
 # --- Client-optional helpers (server half is harmless to vanilla clients) --
 jade                            both     core
@@ -53,6 +57,6 @@ immediatelyfast                 client   core
 waystones                       both     full
 farmers-delight-refabricated    both     full
 naturalist                      both     full
-comforts                        both     full
+comforts                        both     full   optional
 better-combat                   both     full
-immersive-armors                both     full
+immersive-armors                both     full   optional
