@@ -50,6 +50,11 @@ make down
 First start downloads Fabric and every mod (a few minutes). The server
 listens on `localhost:25565`; BlueMap is at <http://localhost:8100>.
 
+To play against the local server, `make mrpack-local` builds
+`dist/friends-server-full-<version>-local.mrpack` with `localhost` already in
+the multiplayer list. Install it as described in [docs/JOINING.md](docs/JOINING.md).
+Your Minecraft username must be in `WHITELIST` in `server/server.env`.
+
 ## AWS
 
 Requirements: AWS CLI v2 with the Session Manager plugin, Terraform 1.6+.

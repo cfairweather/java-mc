@@ -3,6 +3,8 @@
 
   scripts/build_mrpack.py --profile full   # content mods + client perf mods
   scripts/build_mrpack.py --profile core   # client perf mods only (joins a core server)
+  scripts/build_mrpack.py --profile full --server-address localhost --version 1.2.0-local
+                                           # for testing against `make up` on this machine
 
 The pack pre-fills the server in the multiplayer list (servers.dat) using
 client-pack/pack.json, and copies anything under client-pack/overrides/ verbatim.
@@ -45,6 +47,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--profile", choices=("core", "full"), default="full")
     ap.add_argument("--version", default=None, help="pack version (default: client-pack/pack.json)")
+    ap.add_argument("--server-address", default=None,
+                    help="server to pre-fill in the multiplayer list (default: client-pack/pack.json)")
     args = ap.parse_args()
 
     lock = json.loads(LOCK.read_text())
@@ -86,7 +90,7 @@ def main():
     out = DIST / f"{pack['slug']}-{profile}-{version}.mrpack"
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr("modrinth.index.json", json.dumps(index, indent=2))
-        address = pack.get("server_address", "")
+        address = args.server_address or pack.get("server_address", "")
         if address and not address.startswith("SET-ME"):
             z.writestr("overrides/servers.dat", servers_dat(pack["server_name"], address))
         else:

@@ -27,6 +27,10 @@ mrpack: ## Build the client packs into dist/ (core and full)
 	python3 scripts/build_mrpack.py --profile core
 	python3 scripts/build_mrpack.py --profile full
 
+mrpack-local: ## Build a full client pack that points at localhost, for testing `make up`
+	python3 scripts/build_mrpack.py --profile full --server-address localhost \
+	  --version $$(python3 -c 'import json; print(json.load(open("client-pack/pack.json"))["version"])')-local
+
 # ---------------------------------------------------------------- local ------
 .PHONY: up down restart logs ps rcon console whitelist-add whitelist-remove backup-now snapshots restore
 up: .env ## Build and start the local server + backup sidecar
