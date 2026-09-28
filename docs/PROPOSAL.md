@@ -230,19 +230,20 @@ sharing `server/server.env` and `mods/versions.env`.
 
 ### Update: Minecraft 26.3 (2026-09-23)
 
-Moved from 26.2 to 26.3 (released 2026-09-15). Eight mods have no 26.3 build
-on any loader yet and are marked `optional`, so they are skipped until their
-authors publish one:
+Moved from 26.2 to 26.3 (released 2026-09-15). Eight mods had no 26.3 build
+on any loader at the time and were marked `optional`. These five are still
+skipped until their authors publish one:
 
 | Skipped | Kind | Impact |
 | --- | --- | --- |
-| Terralith, Nullscape, Incendium | World generation | Vanilla overworld biomes, End, and Nether. Adding them after the world exists only affects newly generated chunks. |
 | Comforts, Immersive Armors | Content (full pack) | No sleeping bags or hammocks, no extra armor sets. |
 | Krypton | Performance | Slightly less efficient networking. |
 | Fabric Tailor | Admin | No custom skins via command. |
 | AFK Display | Datapack | No AFK marker in the tab list. |
 
-Tectonic still reshapes the overworld terrain on 26.3. Dungeons and Taverns
+Terralith, Nullscape and Incendium were in this list at first; their 26.3
+builds were published on 2026-09-27 and 2026-09-28 and they are installed again. Tectonic
+reshapes the overworld terrain alongside them. Dungeons and Taverns
 6.0.1 logs one error at startup (a structure-search helper references a
 structure that does not exist); it is an upstream bug and the rest of the
 mod loads.

@@ -57,6 +57,12 @@ jobs:
           docker compose exec -T mc mc-health
           docker compose exec -T mc rcon-cli list
           docker compose exec -T mc sh -c 'grep -E "^(online-mode|white-list|enforce-whitelist|enforce-secure-profile)=" /data/server.properties'
+          # Startup gamerules are applied over RCON a few seconds after the server
+          # starts listening, so poll instead of reading once.
+          for i in $(seq 1 12); do
+            docker compose exec -T mc rcon-cli gamerule keep_inventory | grep -q true && break
+            sleep 5
+          done
           docker compose exec -T mc rcon-cli gamerule keep_inventory | grep -q true
       - name: Server logs
         if: always()

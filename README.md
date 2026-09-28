@@ -4,7 +4,7 @@ A private, modded Minecraft Java Edition server for friends. Runs the same
 Docker image locally (Docker Compose) and on AWS (one Bottlerocket host on ECS)
 with whitelist-only access, Mojang authentication, and restic backups to S3.
 
-- **Minecraft 26.3 on Fabric**, ~35 curated mods pinned by exact version (see
+- **Minecraft 26.3 on Fabric**, ~40 curated mods pinned by exact version (see
   [`mods/mods.txt`](mods/mods.txt) and the generated [`mods/lock.json`](mods/lock.json)).
 - **Two profiles.** `core`: server-side mods only, friends join with the stock
   launcher. `full` (default): adds content mods; friends install a one-click
